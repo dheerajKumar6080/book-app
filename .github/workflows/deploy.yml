@@ -49,13 +49,3 @@ jobs:
       - name: Push Docker Image to ECR
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/my-ecommerce-app:latest
-
-      # Step 8: Deploy to Elastic Beanstalk
-      - name: Deploy to Elastic Beanstalk
-        uses: aws-actions/aws-elastic-beanstalk-deploy-action@v1
-        with:
-          application-name: my-ecommerce-app
-          environment-name: production
-          version-label: ${{ github.sha }}
-          region: us-east-2
-          bucket-name: elasticbeanstalk-us-east-2-${{ secrets.AWS_ACCOUNT_ID }}
