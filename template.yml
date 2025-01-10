@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: "production"
+    Description: The name of the environment for Elastic Beanstalk.
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: The password for the RDS database.
+
+Resources:
+  # VPC
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: "my-vpc"
+
+  # Public Subnet
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.1.0/24"
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: "public-subnet"
+
+  # Private Subnet
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.2.0/24"
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: "private-subnet"
+
+  # Security Group for EC2
+  MyEC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow HTTP and SSH access"
+      VpcId: !Ref MyVPC
+      SecurityGroupIngress:
+        - IpProtocol: "tcp"
+          FromPort: "22"
+          ToPort: "22"
+          CidrIp: "0.0.0.0/0"
+        - IpProtocol: "tcp"
+          FromPort: "80"
+          ToPort: "80"
+          CidrIp: "0.0.0.0/0"
+
+  # Elastic Beanstalk Application
+  MyElasticBeanstalkApplication:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      ApplicationName: "my-ecommerce-app"
+
+  # Elastic Beanstalk Environment for Docker
+  MyElasticBeanstalkEnvironment:
+    Type: AWS::ElasticBeanstalk::Environment
+    Properties:
+      EnvironmentName: !Ref EnvironmentName
+      ApplicationName: !Ref MyElasticBeanstalkApplication
+      SolutionStackName: "64bit Amazon Linux 2 v3.3.5 running Docker"
+      OptionSettings:
+        - Namespace: "aws:autoscaling:asg"
+          OptionName: "MinSize"
+          Value: "1"
+        - Namespace: "aws:autoscaling:asg"
+          OptionName: "MaxSize"
+          Value: "1"
+        - Namespace: "aws:elasticbeanstalk:container:docker"
+          OptionName: "Dockerfile"
+          Value: "Dockerfile"  # Specify the Dockerfile for the app
+
+  # RDS Database Instance (free-tier eligible db.t2.micro)
+  MyRDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: "my-rds-instance"
+      Engine: "mysql"
+      DBInstanceClass: "db.t2.micro"
+      AllocatedStorage: 20
+      MasterUsername: "admin"
+      MasterUserPassword: !Ref DBPassword
+      DBName: "ecommerce"
+      VPCSecurityGroups:
+        - !Ref MyEC2SecurityGroup
+      PubliclyAccessible: false
+      DBSubnetGroupName: !Ref MyDBSubnetGroup
+      MultiAZ: false
+
+  # DB Subnet Group
+  MyDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "Subnets for RDS"
+      SubnetIds:
+        - !Ref PrivateSubnet
+        - !Ref PublicSubnet
+      Tags:
+        - Key: "Name"
+          Value: "my-db-subnet-group"
+
+  # S3 Bucket for static files (images)
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "my-ecommerce-static-files"
+      VersioningConfiguration:
+        Status: "Enabled"
+      Tags:
+        - Key: "Name"
+          Value: "my-ecommerce-static-files"
+
+Outputs:
+  VPCId:
+    Description: "VPC ID"
+    Value: !Ref MyVPC
+  RDSInstanceEndpoint:
+    Description: "RDS Instance Endpoint"
+    Value: !GetAtt MyRDSInstance.Endpoint.Address
+  S3BucketName:
+    Description: "S3 Bucket Name"
+    Value: !Ref MyS3Bucket
