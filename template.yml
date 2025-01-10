@@ -6,8 +6,8 @@ Parameters:
     Description: The name of the environment for Elastic Beanstalk.
   DBPassword:
     Type: String
-    Default: "hello"
     NoEcho: true
+    Default: "hello"
     Description: The password for the RDS database.
 
 Resources:
@@ -22,8 +22,8 @@ Resources:
         - Key: Name
           Value: "my-vpc"
 
-  # Public Subnet
-  PublicSubnet:
+  # Public Subnet in AZ 1
+  PublicSubnetAZ1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MyVPC
@@ -32,10 +32,10 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: "public-subnet"
+          Value: "public-subnet-az1"
 
-  # Private Subnet
-  PrivateSubnet:
+  # Private Subnet in AZ 1
+  PrivateSubnetAZ1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MyVPC
@@ -43,7 +43,30 @@ Resources:
       AvailabilityZone: !Select [0, !GetAZs '']
       Tags:
         - Key: Name
-          Value: "private-subnet"
+          Value: "private-subnet-az1"
+
+  # Public Subnet in AZ 2
+  PublicSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.3.0/24"
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: "public-subnet-az2"
+
+  # Private Subnet in AZ 2
+  PrivateSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.4.0/24"
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: "private-subnet-az2"
 
   # Security Group for EC2
   MyEC2SecurityGroup:
@@ -108,8 +131,8 @@ Resources:
     Properties:
       DBSubnetGroupDescription: "Subnets for RDS"
       SubnetIds:
-        - !Ref PrivateSubnet
-        - !Ref PublicSubnet
+        - !Ref PrivateSubnetAZ1
+        - !Ref PrivateSubnetAZ2  # Add second private subnet in AZ 2
       Tags:
         - Key: "Name"
           Value: "my-db-subnet-group"
