@@ -26,7 +26,7 @@ jobs:
       - name: Create/Update CloudFormation Stack
         run: |
           aws cloudformation deploy \
-            --template-file template.yml \
+            --template-file infra.yml \
             --stack-name my-stack \
             --capabilities CAPABILITY_IAM \
             --region us-east-2
@@ -52,7 +52,7 @@ jobs:
 
       # Step 8: Deploy to Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
-        uses: aws-actions/aws-elastic-beanstalk-deploy@v1
+        uses: aws-actions/aws-elastic-beanstalk-deploy-action@v1
         with:
           application-name: my-ecommerce-app
           environment-name: production
