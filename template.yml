@@ -7,7 +7,7 @@ Parameters:
   DBPassword:
     Type: String
     NoEcho: true
-    Default: "hello"
+    Default: "hello12345"
     Description: The password for the RDS database.
 
 Resources:
