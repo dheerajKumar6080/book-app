@@ -96,7 +96,7 @@ Resources:
     Properties:
       EnvironmentName: !Ref EnvironmentName
       ApplicationName: !Ref MyElasticBeanstalkApplication
-      SolutionStackName: "64bit Amazon Linux 2 v3.5.0 running Docker"
+      SolutionStackName: "64bit Amazon Linux 2 v4.0.6 running Docker"
       OptionSettings:
         - Namespace: "aws:autoscaling:asg"
           OptionName: "MinSize"
