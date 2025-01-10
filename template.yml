@@ -6,6 +6,7 @@ Parameters:
     Description: The name of the environment for Elastic Beanstalk.
   DBPassword:
     Type: String
+    Default: "hello"
     NoEcho: true
     Description: The password for the RDS database.
 
