@@ -32,13 +32,16 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Generate Docker image tag
+        id: generate_docker_image_tag
+        run: echo "IMAGE_TAG=$(date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
       - name: Build and Tag Docker Image
         run: |
           IMAGE_TAG=${{ github.sha }}
           docker build -t my-ecommerce-app .
           docker images
-          docker tag my-ecommerce-app:latest ${{ steps.login-ecr.outputs.registry }}/ecomm-app-repo:$IMAGE_TAG
-          echo "IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
+          docker tag my-ecommerce-app:${IMAGE_TAG} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/my-ecommerce-app:${IMAGE_TAG}
 
       - name: Push Docker Image to ECR
         run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/my-ecommerce-app:${IMAGE_TAG}
