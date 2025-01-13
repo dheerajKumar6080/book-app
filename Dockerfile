@@ -1,18 +1,20 @@
-# Use an official Node.js runtime as a parent image
-FROM node:14-slim
+# Stage 1: Build the React app
+FROM node:14-slim AS builder
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Install dependencies
-COPY package.json /app
+COPY package*.json ./
 RUN npm install
 
-# Copy the rest of the application code
-COPY . /app
+COPY . .
 
-# Expose port 80 to the outside world
+RUN npm run build
+
+# Stage 2: Serve the built app with Nginx
+FROM nginx:alpine
+
+COPY --from=builder /app/build /usr/share/nginx/html
+
 EXPOSE 80
 
-# Run the app
-CMD ["npm", "start"]
+CMD ["nginx", "-g", "daemon off;"]
