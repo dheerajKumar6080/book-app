@@ -19,14 +19,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
 
-      - name: Create/Update CloudFormation Stack
-        run: |
-          aws cloudformation deploy \
-            --template-file template.yml \
-            --stack-name my-ecommerce-stack \
-            --capabilities CAPABILITY_IAM \
-            --parameter-overrides EnvironmentName=production \
-            --region us-east-2
+      # - name: Create/Update CloudFormation Stack
+      #   run: |
+      #     aws cloudformation deploy \
+      #       --template-file template.yml \
+      #       --stack-name my-ecommerce-stack \
+      #       --capabilities CAPABILITY_IAM \
+      #       --parameter-overrides EnvironmentName=production \
+      #       --region us-east-2
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -39,7 +39,7 @@ jobs:
           docker tag my-ecommerce-app:latest ${{ steps.login-ecr.outputs.registry }}/ecomm-app-repo:$IMAGE_TAG
 
       - name: Push Docker Image to ECR
-        run: docker push ${{ steps.login-ecr.outputs.registry }}/my-ecommerce-app-repo:$IMAGE_TAG
+        run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/my-ecommerce-app:${IMAGE_TAG}
 
       - name: Zip Application
         run: zip -r app.zip . -x "*.git*"
