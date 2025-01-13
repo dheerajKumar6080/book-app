@@ -90,13 +90,13 @@ Resources:
     Properties:
       ApplicationName: "my-ecommerce-app"
 
-  # Elastic Beanstalk Environment for Docker
   MyElasticBeanstalkEnvironment:
     Type: AWS::ElasticBeanstalk::Environment
+    DependsOn: MyRDSInstance # If you have RDS
     Properties:
       EnvironmentName: !Ref EnvironmentName
       ApplicationName: !Ref MyElasticBeanstalkApplication
-      SolutionStackName: "64bit Amazon Linux 2 v4.0.6 running Docker"
+      SolutionStackName: "64bit Amazon Linux 2 v4.1.0 running Docker" # Or latest
       OptionSettings:
         - Namespace: "aws:autoscaling:asg"
           OptionName: "MinSize"
@@ -104,9 +104,18 @@ Resources:
         - Namespace: "aws:autoscaling:asg"
           OptionName: "MaxSize"
           Value: "1"
-        - Namespace: "aws:elasticbeanstalk:container:docker"
-          OptionName: "Dockerfile"
-          Value: "Dockerfile"  # Specify the Dockerfile for the app
+        - Namespace: "aws:elasticbeanstalk:application:environment"
+          OptionName: "DockerImage"
+          Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/my-ecommerce-app-repo:${EB_VERSION}' # Use the correct repo name
+        - Namespace: aws:ec2:vpc
+          OptionName: VPCId
+          Value: !Ref MyVPC # If you have a VPC
+        - Namespace: aws:ec2:vpc
+          OptionName: Subnets
+          Value: !Join [ ',', [ !Ref PublicSubnetAZ1, !Ref PublicSubnetAZ2 ] ] # If you have a VPC
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: LoadBalancerType
+          Value: single-instance # Or 'none' if you don't want a load balancer
 
   # RDS Database Instance (free-tier eligible db.t2.micro)
   MyRDSInstance:
