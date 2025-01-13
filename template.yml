@@ -131,7 +131,7 @@ Resources:
           Value: "1"
         - Namespace: "aws:elasticbeanstalk:application:environment"
           OptionName: "DockerImage"
-          Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/my-ecommerce-app-repo:${EB_VERSION}' # Use the correct repo name
+          Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/ecomm-app-repo' 
         - Namespace: aws:ec2:vpc
           OptionName: VPCId
           Value: !Ref MyVPC # If you have a VPC
