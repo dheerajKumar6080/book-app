@@ -83,30 +83,7 @@ Resources:
           FromPort: "80"
           ToPort: "80"
           CidrIp: "0.0.0.0/0"
-  EBAppVersionsBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: elasticbeanstalk-us-east-2-391941063314 # Replace with YOUR actual bucket name
-
-  # Bucket Policy (Now refers to the existing bucket)
-  EBAppVersionsBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref EBAppVersionsBucket
-      PolicyDocument:
-        Statement:
-          - Sid: AllowElasticBeanstalkToAccessBucket
-            Effect: Allow
-            Principal:
-              Service: elasticbeanstalk.amazonaws.com
-            Action:
-              - s3:GetObject
-              - s3:PutObject
-              - s3:ListBucket
-              - s3:DeleteObject
-            Resource:
-              - !Sub arn:aws:s3:::${EBAppVersionsBucket.BucketName}
-              - !Sub arn:aws:s3:::${EBAppVersionsBucket.BucketName}/app-versions/*
+  
 
   # Elastic Beanstalk Application
   MyElasticBeanstalkApplication:
