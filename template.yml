@@ -83,13 +83,12 @@ Resources:
           FromPort: "80"
           ToPort: "80"
           CidrIp: "0.0.0.0/0"
-  # S3 Bucket for Application Versions
   EBAppVersionsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub elasticbeanstalk-${AWS::Region}-${AWS::AccountId} # Standard EB bucket naming
+      BucketName: elasticbeanstalk-us-east-2-391941063314 # Replace with YOUR actual bucket name
 
-  # Add a Bucket Policy to allow Elastic Beanstalk to access the bucket
+  # Bucket Policy (Now refers to the existing bucket)
   EBAppVersionsBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
