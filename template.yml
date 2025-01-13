@@ -88,24 +88,6 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub elasticbeanstalk-${AWS::Region}-${AWS::AccountId} # Standard EB bucket naming
-      VersioningConfiguration:
-        Status: Enabled # Enable versioning for rollbacks
-      PublicAccessBlockConfiguration: # Block all public access (recommended)
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      LifecycleConfiguration: # Optional: Clean up old versions
-        Rules:
-          - Id: RemoveOldVersions
-            Prefix: app-versions/ # Only apply to files in this prefix
-            Status: Enabled
-            NoncurrentVersionExpirationInDays: 30 # Delete noncurrent versions after 30 days
-            AbortIncompleteMultipartUpload:
-              DaysAfterInitiation: 7 # Delete incomplete uploads after 7 days
-      Tags:
-        - Key: Name
-          Value: !Sub Elastic Beanstalk Application Versions for ${AWS::StackName}
 
   # Add a Bucket Policy to allow Elastic Beanstalk to access the bucket
   EBAppVersionsBucketPolicy:
@@ -124,8 +106,8 @@ Resources:
               - s3:ListBucket
               - s3:DeleteObject
             Resource:
-              - !GetAtt EBAppVersionsBucket.Arn
-              - !Sub ${EBAppVersionsBucket.Arn}/app-versions/*
+              - !Sub arn:aws:s3:::${EBAppVersionsBucket.BucketName}
+              - !Sub arn:aws:s3:::${EBAppVersionsBucket.BucketName}/app-versions/*
 
   # Elastic Beanstalk Application
   MyElasticBeanstalkApplication:
@@ -149,7 +131,7 @@ Resources:
           Value: "1"
         - Namespace: "aws:elasticbeanstalk:application:environment"
           OptionName: "DockerImage"
-          Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/ecomm-app-repo' 
+          Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/my-ecommerce-app-repo:${EB_VERSION}' # Use the correct repo name
         - Namespace: aws:ec2:vpc
           OptionName: VPCId
           Value: !Ref MyVPC # If you have a VPC
