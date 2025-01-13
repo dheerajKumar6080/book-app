@@ -83,7 +83,6 @@ Resources:
           FromPort: "80"
           ToPort: "80"
           CidrIp: "0.0.0.0/0"
-  
 
   # Elastic Beanstalk Application
   MyElasticBeanstalkApplication:
@@ -91,6 +90,42 @@ Resources:
     Properties:
       ApplicationName: "my-ecommerce-app"
 
+  # IAM Role for EC2 Instances in Elastic Beanstalk Environment
+  MyElasticBeanstalkInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "sts:AssumeRole"
+            Principal:
+              Service: "ec2.amazonaws.com"
+      Policies:
+        - PolicyName: "ElasticBeanstalkInstancePolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ec2:DescribeInstances"
+                  - "ec2:DescribeSecurityGroups"
+                  - "ec2:DescribeSubnets"
+                  - "ec2:DescribeVpcs"
+                  - "elasticloadbalancing:DescribeLoadBalancers"
+                  - "s3:GetObject"
+                  - "rds:DescribeDBInstances"
+                  - "rds:DescribeDBClusters"
+                Resource: "*"
+
+  # Instance Profile for EC2 Instances
+  MyElasticBeanstalkInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref MyElasticBeanstalkInstanceRole
+
+  # Elastic Beanstalk Environment
   MyElasticBeanstalkEnvironment:
     Type: AWS::ElasticBeanstalk::Environment
     DependsOn: MyRDSInstance # If you have RDS
@@ -117,7 +152,9 @@ Resources:
         - Namespace: aws:ec2:vpc
           OptionName: Subnets
           Value: !Join [ ',', [ !Ref PublicSubnetAZ1, !Ref PublicSubnetAZ2 ] ] # If you have a VPC
-        
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: InstanceProfile
+          Value: !Ref MyElasticBeanstalkInstanceProfile
 
   # RDS Database Instance (free-tier eligible db.t2.micro)
   MyRDSInstance:
