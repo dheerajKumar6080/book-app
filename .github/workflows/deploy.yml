@@ -25,7 +25,7 @@ jobs:
             --template-file template.yml \
             --stack-name my-ecommerce-stack \
             --capabilities CAPABILITY_IAM \
-            --parameter-overrides EnvironmentName=production KeyName=your_key_pair_name DBPassword=${{ secrets.DB_PASSWORD }} \
+            --parameter-overrides EnvironmentName=production \
             --region us-east-2
 
       - name: Login to Amazon ECR
