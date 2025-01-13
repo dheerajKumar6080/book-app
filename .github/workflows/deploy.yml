@@ -37,7 +37,7 @@ jobs:
           IMAGE_TAG=${{ github.sha }}
           docker build -t my-ecommerce-app .
           docker tag my-ecommerce-app:latest ${{ steps.login-ecr.outputs.registry }}/ecomm-app-repo:$IMAGE_TAG
-          echo "IMAGE_TAG=$(date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
 
       - name: Push Docker Image to ECR
         run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/my-ecommerce-app:${IMAGE_TAG}
