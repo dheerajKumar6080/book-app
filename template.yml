@@ -152,8 +152,8 @@ Resources:
         - Namespace: aws:ec2:vpc
           OptionName: Subnets
           Value: !Join [ ',', [ !Ref PublicSubnetAZ1, !Ref PublicSubnetAZ2 ] ] # If you have a VPC
-        - Namespace: aws:elasticbeanstalk:environment
-          OptionName: InstanceProfile
+        - Namespace: aws:autoscaling:launchconfiguration # Correct Namespace
+          OptionName: IamInstanceProfile # Correct Option Name
           Value: !Ref MyElasticBeanstalkInstanceProfile
 
   # RDS Database Instance (free-tier eligible db.t2.micro)
