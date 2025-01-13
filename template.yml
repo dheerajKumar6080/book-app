@@ -116,7 +116,7 @@ Resources:
           Value: !Join [ ',', [ !Ref PublicSubnetAZ1, !Ref PublicSubnetAZ2 ] ] # If you have a VPC
         - Namespace: aws:elasticbeanstalk:environment
           OptionName: LoadBalancerType
-          Value: single-instance # Or 'none' if you don't want a load balancer
+          Value: none # Or 'none' if you don't want a load balancer
 
   # RDS Database Instance (free-tier eligible db.t2.micro)
   MyRDSInstance:
