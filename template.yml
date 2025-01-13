@@ -83,6 +83,49 @@ Resources:
           FromPort: "80"
           ToPort: "80"
           CidrIp: "0.0.0.0/0"
+  # S3 Bucket for Application Versions
+  EBAppVersionsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub elasticbeanstalk-${AWS::Region}-${AWS::AccountId} # Standard EB bucket naming
+      VersioningConfiguration:
+        Status: Enabled # Enable versioning for rollbacks
+      PublicAccessBlockConfiguration: # Block all public access (recommended)
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration: # Optional: Clean up old versions
+        Rules:
+          - Id: RemoveOldVersions
+            Prefix: app-versions/ # Only apply to files in this prefix
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30 # Delete noncurrent versions after 30 days
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7 # Delete incomplete uploads after 7 days
+      Tags:
+        - Key: Name
+          Value: !Sub Elastic Beanstalk Application Versions for ${AWS::StackName}
+
+  # Add a Bucket Policy to allow Elastic Beanstalk to access the bucket
+  EBAppVersionsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref EBAppVersionsBucket
+      PolicyDocument:
+        Statement:
+          - Sid: AllowElasticBeanstalkToAccessBucket
+            Effect: Allow
+            Principal:
+              Service: elasticbeanstalk.amazonaws.com
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:ListBucket
+              - s3:DeleteObject
+            Resource:
+              - !GetAtt EBAppVersionsBucket.Arn
+              - !Sub ${EBAppVersionsBucket.Arn}/app-versions/*
 
   # Elastic Beanstalk Application
   MyElasticBeanstalkApplication:
