@@ -1,0 +1,11 @@
+{
+    "AWSEBDockerrunVersion": "1",
+    "Image": {
+      "Name": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/your-ecr-repo-name:latest"
+    },
+    "Ports": [
+      {
+        "ContainerPort": 80
+      }
+    ]
+  }
