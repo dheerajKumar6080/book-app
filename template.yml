@@ -99,6 +99,9 @@ Resources:
       ApplicationName: !Ref MyElasticBeanstalkApplication
       SolutionStackName: "64bit Amazon Linux 2 v4.0.6 running Docker" # Or latest
       OptionSettings:
+        - Namespace: aws:autoscaling:launchconfiguration # This is the key part you were missing
+          OptionName: InstanceType
+          Value: t2.micro # Free tier eligible
         - Namespace: "aws:autoscaling:asg"
           OptionName: "MinSize"
           Value: "1"
@@ -114,9 +117,7 @@ Resources:
         - Namespace: aws:ec2:vpc
           OptionName: Subnets
           Value: !Join [ ',', [ !Ref PublicSubnetAZ1, !Ref PublicSubnetAZ2 ] ] # If you have a VPC
-        - Namespace: aws:elasticbeanstalk:environment
-          OptionName: LoadBalancerType
-          Value: none # Or 'none' if you don't want a load balancer
+        
 
   # RDS Database Instance (free-tier eligible db.t2.micro)
   MyRDSInstance:
