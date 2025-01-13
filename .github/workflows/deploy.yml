@@ -22,7 +22,7 @@ jobs:
       - name: Create/Update CloudFormation Stack
         run: |
           aws cloudformation deploy \
-            --template-file infra.yml \
+            --template-file template.yml \
             --stack-name my-ecommerce-stack \
             --capabilities CAPABILITY_IAM \
             --parameter-overrides EnvironmentName=production KeyName=your_key_pair_name DBPassword=${{ secrets.DB_PASSWORD }} \
