@@ -23,9 +23,9 @@ jobs:
         run: |
           aws cloudformation deploy \
             --template-file infra.yml \
-            --stack-name my-ecommerce-stack \ # Give it a unique name
+            --stack-name my-ecommerce-stack \
             --capabilities CAPABILITY_IAM \
-            --parameter-overrides EnvironmentName=production KeyName=your_key_pair_name DBPassword=${{ secrets.DB_PASSWORD }} \ # Add parameters
+            --parameter-overrides EnvironmentName=production KeyName=your_key_pair_name DBPassword=${{ secrets.DB_PASSWORD }} \
             --region us-east-2
 
       - name: Login to Amazon ECR
@@ -36,17 +36,25 @@ jobs:
         run: |
           IMAGE_TAG=${{ github.sha }}
           docker build -t my-ecommerce-app .
-          docker tag my-ecommerce-app:latest ${{ steps.login-ecr.outputs.registry }}/my-ecommerce-app-repo:$IMAGE_TAG # Use correct repo name
+          docker tag my-ecommerce-app:latest ${{ steps.login-ecr.outputs.registry }}/my-ecommerce-app-repo:$IMAGE_TAG
 
       - name: Push Docker Image to ECR
-        run: docker push ${{ steps.login-ecr.outputs.registry }}/my-ecommerce-app-repo:$IMAGE_TAG # Use correct repo name
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/my-ecommerce-app-repo:$IMAGE_TAG
+
+      - name: Zip Application
+        run: zip -r app.zip . -x "*.git*"
+
+      - name: Upload to S3
+        run: aws s3 cp app.zip s3://elasticbeanstalk-us-east-2-${{ secrets.AWS_ACCOUNT_ID }}/app-versions/app-${{ github.sha }}.zip
 
       - name: Deploy to Elastic Beanstalk
-        uses: einaregilsson/aws-elastic-beanstalk-deployment@v22
-        with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: my-ecommerce-app
-          environment_name: production
-          version_label: ${{ github.sha }}
-          region: us-east-2
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name my-ecommerce-app \
+            --version-label ${{ github.sha }} \
+            --source-bundle S3Bucket=elasticbeanstalk-us-east-2-${{ secrets.AWS_ACCOUNT_ID }},S3Key=app-versions/app-${{ github.sha }}.zip
+
+          aws elasticbeanstalk update-environment \
+            --application-name my-ecommerce-app \
+            --environment-name production \
+            --version-label ${{ github.sha }}
